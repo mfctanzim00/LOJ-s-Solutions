@@ -53,9 +53,6 @@ struct Trie{
 
 int main()
 {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0); cout.tie(0);
-
     int t=1, n, m, k, cs=0;
     scanf("%d", &t);
 
