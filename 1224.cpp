@@ -42,9 +42,9 @@ struct Trie{
     }
 
     void solve(node *root, int curLen){
+        ans = max(ans, curLen * root->cnt);
         for(int i=0; i<4; i++){
             if(root->nxt[i] != NULL){
-                ans = max(ans, (curLen+1)*root->nxt[i]->cnt);
                 solve(root->nxt[i], curLen+1);
             }
         }
