@@ -1,160 +1,94 @@
 #include<bits/stdc++.h>
-#include<cstring>
-//#define Mfc_Tanzim
-#define   ll         long long
-#define   ull        unsigned long long
-#define   pb         push_back
-#define   ff         first
-#define   ss         second
-#define   all(v)     (v.begin(), v.end())
-#define   rall(v)    (v.rbegin(), v.rend())
-#define   pi         acos(-1.0)
-#define   FastRead   ios_base::sync_with_stdio(0);cin.tie(0); cout.tie(0);
-#define   bug(a)     cerr << #a << " : " << a << endl
 using namespace std;
-const ll mx = 1e9+7;
+#define bug(a) cerr<<#a<<" : "<<a<<endl
 
-ll posx[] = {1,-1, 0, 0};
-ll posy[] = {0, 0, 1,-1};
-
-bool check(int n, int i)
-{
-    return (n>>i)&1;
-}
-
-struct node
-{
-    node *zero, *one;
-    node()
-    {
-        zero = one = NULL;
-    }
-}*root;
-
-void insert(int n)
-{
-    node* curr = root;
-    for(int i=31; i>=0; i--)
-    {
-        bool ok = check(n, i);
-        if(ok)
-        {
-            if(curr->one==NULL)
-                curr->one = new node();
-            curr = curr->one;
+struct Trie{
+    struct node{
+        node *nxt[2];
+        node(){
+            nxt[0] = nxt[1] = NULL;
         }
-        else
-        {
-            if(curr->zero==NULL)
-                curr->zero = new node();
-            curr = curr->zero;
+    }*root;
+
+    Trie(){
+        root = new node();
+    }
+
+    void Insert(int n){
+        node *cur = root;
+        for(int i=30; i>=0; i--){
+            bool f = (bool)((1<<i)&n);
+            if(cur->nxt[f] == NULL){
+                cur->nxt[f] = new node();
+            }
+            cur = cur->nxt[f];
         }
     }
-}
 
-int get_max(int n)
-{
-    node* curr = root;
-    int ret = 0;
-
-    for(int i=31; i>=0; i--)
-    {
-        bool ok = check(n, i);
-        if(ok)
-        {
-            if(curr->zero)
-            {
-                curr = curr->zero;
-                ret|=(1<<i);
+    int getMx(int n){
+        int curAns=0;
+        node *cur = root;
+        for(int i=30; i>=0; i--){
+            bool f = (bool)((1<<i)&n);
+            if(cur->nxt[!f] != NULL){
+                curAns |= (1<<i);
+                cur = cur->nxt[!f];
             }
-            else
-                curr = curr->one;
-        }
-        else
-        {
-            if(curr->one)
-            {
-                curr = curr->one;
-                ret|=(1<<i);
+            else if(cur->nxt[f] != NULL){
+                cur = cur->nxt[f];
             }
-            else
-                curr = curr->zero;
+            else break;
         }
+        return curAns;
     }
-    return ret;
-}
 
-int get_min(int n)
-{
-    node* curr = root;
-    int ret = 0;
-
-    for(int i=31; i>=0; i--)
-    {
-        bool ok = check(n, i);
-        if(ok)
-        {
-            if(curr->one)
-                curr = curr->one;
-            else
-            {
-                curr = curr->zero;
-                ret|=(1<<i);
+    int getMn(int n){
+        int curAns=0;
+        node *cur = root;
+        for(int i=30; i>=0; i--){
+            bool f = (bool)((1<<i)&n);
+            if(cur->nxt[f] != NULL){
+                cur = cur->nxt[f];
             }
-        }
-        else
-        {
-            if(curr->zero)
-                curr = curr->zero;
-            else
-            {
-                curr = curr->one;
-                ret|=(1<<i);
+            else if(cur->nxt[!f] != NULL){
+                curAns |= (1<<i);
+                cur = cur->nxt[!f];
             }
+            else break;
         }
+        return curAns;
     }
-    return ret;
-}
 
-void del(node* cur)
-{
-    if(cur->one)
-        del(cur->one);
-    if(cur->zero)
-        del(cur->zero);
-    delete(cur);
-}
+    void del(node* cur){
+        if(cur->nxt[1])
+            del(cur->nxt[1]);
+        if(cur->nxt[0])
+            del(cur->nxt[0]);
+        delete(cur);
+    }
+};
 
 int main()
 {
-    FastRead
+    int t=1, n, m, k, cs=0;
+    scanf("%d", &t);
 
-#ifdef Mfc_Tanzim
-    freopen("input.txt","r", stdin);
-    // freopen("output.txt","w", stdout);
-#endif /// Mfc_Tanzim
+    while(t--){
+            scanf("%d", &n);
 
-    int t, n, a;
-    cin >> t;
-    for(int i=1; i<=t; i++)
-    {
-        cin >> n;
-        root = new node();
-        insert(0);
-        int mx = 0, mn = INT_MAX, now = 0;
-        for(int i=1; i<=n; i++)
-        {
-            cin >> a;
-            now^=a;
-            mx = max(mx, get_max(now));
-            mn = min(mn, get_min(now));
+            Trie tree;
+            tree.Insert(0);
 
-            insert(now);
-        }
-
-        cout << "Case " << i << ": " << mx << " " << mn << endl;
-        del(root);
+            int prfXOR = 0, mx=INT_MIN, mn=INT_MAX;
+            for(int i=1; i<=n; i++){
+                    scanf("%d", &k);
+                    prfXOR ^= k;
+                    mx = max(mx, tree.getMx(prfXOR));
+                    mn = min(mn, tree.getMn(prfXOR));
+                    tree.Insert(prfXOR);
+            }
+            printf("Case %d: %d %d\n", ++cs, mx, mn);
+            tree.del(tree.root);
     }
     return 0;
 }
-
